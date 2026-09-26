@@ -7,8 +7,13 @@ async function request(path, { method = "GET", body } = {}) {
     headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
-  const data = await res.json().catch(() => ({}));
+  
+  const isJson = res.headers.get("content-type")?.includes("application/json");
+  const data = isJson ? await res.json().catch(() => ({})) : {};
+  
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status}).`);
+  if (!isJson) throw new Error(`Expected JSON but got HTML. Did you forget to set VITE_API_URL?`);
+  
   return data;
 }
 
